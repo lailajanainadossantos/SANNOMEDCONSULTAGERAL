@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>SannoMed — Prescrições & Solicitações</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --primary: #005f73;
+      --primary-light: #e0f2f1;
+      --accent: #0a9396;
+      --border: #d0d7de;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --bg: #f3f4f6;
+      --paper: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-with-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .brand-text {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .clinic-info {
+      font-size: 0.8rem;
+      text-align: right;
+      line-height: 1.3;
+    }
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .panel,
+    .preview-wrapper {
+      background: var(--paper);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+      padding: 14px 18px;
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      font-size: 0.85rem;
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 0.98rem;
+    }
+
+    h3 {
+      margin: 0 0 4px;
+      font-size: 0.9rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 5px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(10, 147, 150, 0.15);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+      line-height: 1.35;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .small-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    button {
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    button.outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text-main);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .preview-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .preview-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .preview-toolbar span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .preview {
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      padding: 10px;
+      overflow: auto;
+      max-height: calc(100vh - 140px);
+    }
+
+    .doc-sheet {
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto 14px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      padding: 14px 18px;
+      font-size: 0.83rem;
+      line-height: 1.35;
+    }
+
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .doc-header-left {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .doc-header-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      object-fit: contain;
+      background: #ffffff;
+      padding: 3px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .doc-header-left h1 {
+      margin: 0;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .doc-header-left .tagline {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .doc-header-right {
+      text-align: right;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .doc-title {
+      text-align: center;
+      font-weight: 600;
+      margin: 8px 0;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    .doc-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3px 10px;
+      font-size: 0.76rem;
+      margin-bottom: 6px;
+    }
+
+    .doc-meta div span.label {
+      font-weight: 600;
+    }
+
+    .doc-body {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    .doc-section-title {
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+
+    .doc-signature {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+
+    .doc-signature-line {
+      margin-top: 22px;
+      border-top: 1px solid #111827;
+      width: 220px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-top: 3px;
+    }
+
+    .two-columns {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .boxed {
+      border: 1px solid #e5e7eb;
+      padding: 5px 6px;
+      font-size: 0.72rem;
+    }
+
+    .boxed-row {
+      display: grid;
+      grid-template-columns: 80px minmax(0, 1fr);
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .boxed-row:last-child {
+      border-bottom: none;
+    }
+
+    .boxed-row span {
+      padding: 2px 3px;
+    }
+
+    .boxed-row span.label {
+      font-weight: 600;
+      background: #f3f4f6;
+      border-right: 1px solid #e5e7eb;
+      width: 80px;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .calc-summary {
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      padding: 6px 8px;
+      font-size: 0.74rem;
+      background: #f9fafb;
+      margin-top: 4px;
+    }
+
+    .control-header {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 2px 3px 3px;
+      margin: -5px -6px 3px;
+      background: #f3f4f6;
+    }
+
+    .control-vias {
+      margin-top: 6px;
+      gap: 10px;
+    }
+
+    .via-col {
+      border: 1px solid #e5e7eb;
+      padding: 6px 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.76rem;
+      line-height: 1.3;
+    }
+
+    .via-label {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      text-align: center;
+      margin-bottom: 3px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 2px;
+    }
+
+    .via-presc {
+      min-height: 70px;
+      border-bottom: 1px dashed #e5e7eb;
+      padding-bottom: 4px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .preview {
+        max-height: none;
+      }
+
+      .control-vias {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      header,
+      .panel,
+      .preview-toolbar {
+        display: none !important;
+      }
+
+      main {
+        padding: 0;
+      }
+
+      .preview-wrapper {
+        border: none;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .preview {
+        max-height: none;
+        border: none;
+        padding: 0;
+        background: #fff;
+      }
+
+      .doc-sheet {
+        box-shadow: none;
+        border: none;
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand-with-logo">
+        <img src="sannomed-logo.png" alt="SannoMed" class="brand-logo" />
+        <div class="brand-text">SannoMed</div>
+      </div>
+      <div class="clinic-info">
+        Rua Otto Júlio Malina, 671 • Tel: (48) 3034-3735<br />
+        contato@sannomed.com.br
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div>
+          <div class="badge">Configurações do documento</div>
+          <h2>Dados do paciente</h2>
+          <div class="field-row">
+            <div>
+              <label for="docDate">Data</label>
+              <input type="date" id="docDate" />
+            </div>
+            <div>
+              <label for="docType">Tipo de documento</label>
+              <select id="docType">
+                <option value="receita-simples">Receita simples (2 vias)</option>
+                <option value="receita-controlada">
+                  Receita controlada tipo C (2 vias)
+                </option>
+                <option value="sol-exames-lab">
+                  Solicitação de exames laboratoriais
+                </option>
+                <option value="sol-exames-imagem">
+                  Solicitação de exame de imagem
+                </option>
+                <option value="atestado">Atestado médico</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="patientName" style="margin-top: 6px;">Nome completo</label>
+          <input type="text" id="patientName" placeholder="Nome do paciente" />
+
+          <div class="field-row">
+            <div>
+              <label for="patientCpf">CPF</label>
+              <input
+                type="text"
+                id="patientCpf"
+                placeholder="000.000.000-00"
+              />
+            </div>
+            <div>
+              <label for="patientCity">Cidade / UF</label>
+              <input type="text" id="patientCity" placeholder="São José / SC" />
+            </div>
+          </div>
+
+          <label for="patientAddress" style="margin-top: 6px;">Endereço</label>
+          <input
+            type="text"
+            id="patientAddress"
+            placeholder="Rua, número, complemento, bairro"
+          />
+        </div>
+
+        <div>
+          <div class="badge">Prescrição</div>
+          <h2>Texto da prescrição</h2>
+          <p class="small-text">
+            Você sempre pode editar o texto. A mesma prescrição será replicada
+            nas 2 vias quando o tipo for receita simples ou controlada.
+          </p>
+          <textarea
+            id="prescriptionText"
+            placeholder="Ex.: Semaglutida (Wegovy) ____ mg, via SC, 1x por semana, por ____ semanas..."
+          ></textarea>
+
+          <h3 style="margin-top: 8px;">Blocos rápidos de prescrição</h3>
+          <p class="small-text">
+            Estes botões só inserem um modelo de texto, que você pode ajustar.
+          </p>
+          <div class="button-row">
+            <button type="button" class="outline" data-template="wegovy">
+              Wegovy
+            </button>
+            <button type="button" class="outline" data-template="mounjaro">
+              Mounjaro
+            </button>
+            <button type="button" class="outline" data-template="rybelsus">
+              Rybelsus 3 mg
+            </button>
+            <button type="button" class="outline" data-template="saxenda">
+              Saxenda esquema
+            </button>
+            <button type="button" class="outline" data-template="ondansetrona">
+              Ondansetrona 8 mg
+            </button>
+            <button type="button" class="outline" data-template="peg">
+              PEG-Lax 17 g
+            </button>
+            <button type="button" class="outline" data-template="durateston">
+              Durateston 250 mg/mL
+            </button>
+            <button type="button" class="outline" data-template="daem">
+              Daem undecilato
+            </button>
+            <button type="button" class="outline" data-template="androgel">
+              Androgel pump
+            </button>
+            <button type="button" class="outline" data-template="combiron">
+              Combiron Fólico
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="badge">Calculadoras GLP-1</div>
+          <h2>Wegovy &amp; Mounjaro</h2>
+          <p class="small-text">
+            Cálculo simples de dose semanal × nº de semanas, total de aplicações
+            e total em mg. O botão "Gerar prescrição" monta um texto padrão no
+            campo de prescrição (que você pode ajustar).
+          </p>
+
+          <h3>Wegovy (semaglutida)</h3>
+          <div class="calc-grid">
+            <div>
+              <label for="wegovyPresentation">Apresentação</label>
+              <select id="wegovyPresentation">
+                <option value="0,25 mg">Wegovy 0,25 mg (pen)</option>
+                <option value="0,5 mg">Wegovy 0,5 mg (pen)</option>
+                <option value="1 mg">Wegovy 1 mg (pen)</option>
+                <option value="1,7 mg">Wegovy 1,7 mg (pen)</option>
+                <option value="2,4 mg">Wegovy 2,4 mg (pen)</option>
+              </select>
+            </div>
+            <div>
+              <label for="wegovyWeeklyDose">Dose semanal (mg)</label>
+              <input type="number" id="wegovyWeeklyDose" step="0.1" min="0" />
+            </div>
+            <div>
+              <label for="wegovyWeeks">Duração (semanas)</label>
+              <input type="number" id="wegovyWeeks" min="1" step="1" />
+            </div>
+          </div>
+          <div id="wegovySummary" class="calc-summary">
+            Informe dose semanal e nº de semanas para ver o resumo.
+          </div>
+          <div class="button-row">
+            <button type="button" class="outline" id="btnWegovyToRx">
+              Gerar prescrição Wegovy
+            </button>
+          </div>
+
+          <h3 style="margin-top: 8px;">Mounjaro (tirzepatida)</h3>
+          <div class="calc-grid">
+            <div>
+              <label for="mounjaroPresentation">Apresentação</label>
+              <select id="mounjaroPresentation">
+                <option value="2,5 mg">Mounjaro 2,5 mg/dose</option>
+                <option value="5 mg">Mounjaro 5 mg/dose</option>
+                <option value="7,5 mg">Mounjaro 7,5 mg/dose</option>
+                <option value="10 mg">Mounjaro 10 mg/dose</option>
+              </select>
+            </div>
+            <div>
+              <label for="mounjaroWeeklyDose">Dose semanal (mg)</label>
+              <input type="number" id="mounjaroWeeklyDose" step="0.1" min="0" />
+            </div>
+            <div>
+              <label for="mounjaroWeeks">Duração (semanas)</label>
+              <input type="number" id="mounjaroWeeks" min="1" step="1" />
+            </div>
+          </div>
+          <div id="mounjaroSummary" class="calc-summary">
+            Informe dose semanal e nº de semanas para ver o resumo.
+          </div>
+          <div class="button-row">
+            <button type="button" class="outline" id="btnMounjaroToRx">
+              Gerar prescrição Mounjaro
+            </button>
+          </div>
+        </div>
+
+        <div id="atestadoConfig">
+          <div class="badge">Atestado</div>
+          <h2>Configurações do atestado</h2>
+          <div class="field-row">
+            <div>
+              <label for="atestadoDias">Dias de afastamento</label>
+              <input
+                type="number"
+                id="atestadoDias"
+                min="1"
+                step="1"
+                value="1"
+              />
+            </div>
+            <div>
+              <label for="atestadoDiasExtenso">Dias (por extenso)</label>
+              <input
+                type="text"
+                id="atestadoDiasExtenso"
+                placeholder="um, dois, três..."
+              />
+            </div>
+          </div>
+          <p class="small-text">
+            Modelo:<br />
+            <em
+              >"Atesto para os devidos fins, a pedido, que o(a) Sr(a)
+              [NOME], identidade ou CPF [CPF], necessita de ___ (____) dias de
+              afastamento do trabalho por motivo de doença."</em
+            >
+          </p>
+        </div>
+
+        <div>
+          <div class="badge">Exames</div>
+          <h2>Listas padrão de exames</h2>
+          <p class="small-text">
+            Você pode marcar os exames abaixo. Eles serão listados na folha de
+            solicitação conforme o tipo escolhido (laboratorial ou imagem).
+          </p>
+
+          <h3>Laboratoriais</h3>
+          <div class="button-row">
+            <button
+              type="button"
+              class="outline"
+              data-exam-lab="Hemograma completo"
+            >
+              Hemograma
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-lab="Glicemia jejum"
+            >
+              Glicemia
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-lab="HbA1c"
+            >
+              HbA1c
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-lab="Função hepática (TGO, TGP, GGT, FA, BT/BD)"
+            >
+              Função hepática
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-lab="Função renal (Ureia, Creatinina, EAS)"
+            >
+              Função renal
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-lab="Perfil lipídico (CT, HDL, LDL, TG)"
+            >
+              Perfil lipídico
+            </button>
+          </div>
+
+          <textarea
+            id="examsLab"
+            placeholder="Outros exames laboratoriais (um por linha)..."
+            style="margin-top: 4px;"
+          ></textarea>
+
+          <h3 style="margin-top: 8px;">Imagem</h3>
+          <div class="button-row">
+            <button
+              type="button"
+              class="outline"
+              data-exam-img="USG abdome total"
+            >
+              USG abdome
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-img="USG tireoide"
+            >
+              USG tireoide
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-img="Rx tórax PA e perfil"
+            >
+              Rx tórax
+            </button>
+            <button
+              type="button"
+              class="outline"
+              data-exam-img="RM coluna lombar"
+            >
+              RM coluna lombar
+            </button>
+          </div>
+          <textarea
+            id="examsImg"
+            placeholder="Outros exames de imagem (um por linha)..."
+            style="margin-top: 4px;"
+          ></textarea>
+        </div>
+      </section>
+
+      <section class="preview-wrapper">
+        <div class="preview-toolbar">
+          <span>Pré-visualização do documento</span>
+          <button class="primary" type="button" onclick="window.print()">
+            Imprimir / PDF
+          </button>
+        </div>
+        <div class="preview" id="previewContainer"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const docDateEl = document.getElementById("docDate");
+    const docTypeEl = document.getElementById("docType");
+    const patientNameEl = document.getElementById("patientName");
+    const patientCpfEl = document.getElementById("patientCpf");
+    const patientAddressEl = document.getElementById("patientAddress");
+    const patientCityEl = document.getElementById("patientCity");
+    const prescriptionTextEl = document.getElementById("prescriptionText");
+    const atestadoDiasEl = document.getElementById("atestadoDias");
+    const atestadoDiasExtensoEl =
+      document.getElementById("atestadoDiasExtenso");
+    const examsLabEl = document.getElementById("examsLab");
+    const examsImgEl = document.getElementById("examsImg");
+    const previewContainer = document.getElementById("previewContainer");
+    const atestadoConfig = document.getElementById("atestadoConfig");
+
+    const wegovyPresentationEl = document.getElementById("wegovyPresentation");
+    const wegovyWeeklyDoseEl = document.getElementById("wegovyWeeklyDose");
+    const wegovyWeeksEl = document.getElementById("wegovyWeeks");
+    const wegovySummaryEl = document.getElementById("wegovySummary");
+    const btnWegovyToRx = document.getElementById("btnWegovyToRx");
+
+    const mounjaroPresentationEl =
+      document.getElementById("mounjaroPresentation");
+    const mounjaroWeeklyDoseEl = document.getElementById("mounjaroWeeklyDose");
+    const mounjaroWeeksEl = document.getElementById("mounjaroWeeks");
+    const mounjaroSummaryEl = document.getElementById("mounjaroSummary");
+    const btnMounjaroToRx = document.getElementById("btnMounjaroToRx");
+
+    function todayISO() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    if (!docDateEl.value) {
+      docDateEl.value = todayISO();
+    }
+
+    function nl2br(text) {
+      return text.replace(/\n/g, "<br>");
+    }
+
+    function buildHeader(title) {
+      return \`
+        <div class="doc-header">
+          <div class="doc-header-left">
+            <img src="sannomed-logo.png" alt="SannoMed" class="doc-header-logo" />
+            <div>
+              <h1>SannoMed</h1>
+              <div class="tagline">Medicina &amp; Emagrecimento</div>
+            </div>
+          </div>
+          <div class="doc-header-right">
+            Rua Otto Júlio Malina, 671<br/>
+            Tel: (48) 3034-3735 • contato@sannomed.com.br
+          </div>
+        </div>
+        <div class="doc-title">\${title}</div>
+      \`;
+    }
+
+    function buildMeta() {
+      const nome = patientNameEl.value || "________________________________";
+      const cpf = patientCpfEl.value || "________________";
+      const end = patientAddressEl.value || "________________________________";
+      const cidade = patientCityEl.value || "________________";
+      const data = docDateEl.value || todayISO();
+
+      return \`
+        <div class="doc-meta">
+          <div><span class="label">Paciente: </span>\${nome}</div>
+          <div><span class="label">CPF: </span>\${cpf}</div>
+          <div><span class="label">Endereço: </span>\${end}</div>
+          <div><span class="label">Cidade/UF: </span>\${cidade}</div>
+          <div><span class="label">Data: </span>\${data}</div>
+        </div>
+      \`;
+    }
+
+    function buildSignature() {
+      return \`
+        <div class="doc-signature">
+          <div class="doc-signature-line">
+            Dra. Laila Janaína dos Santos<br/>
+            CRM-SC 38237
+          </div>
+        </div>
+      \`;
+    }
+
+    function buildReceitaSimples() {
+      const presc = prescriptionTextEl.value.trim() || "(Prescrição em branco)";
+      const prescHtml = nl2br(presc);
+
+      const via = (numero, legenda) => \`
+        <div class="doc-sheet">
+          \${buildHeader(\`Receita médica — \${numero}ª via \${legenda ? "(" + legenda + ")" : ""}\`)}
+          \${buildMeta()}
+          <div class="doc-section-title">Prescrição</div>
+          <div class="doc-body">\${prescHtml}</div>
+          \${buildSignature()}
+        </div>
+      \`;
+
+      return via(1, "Farmácia") + via(2, "Paciente");
+    }
+
+    function buildReceitaControlada() {
+      const presc = prescriptionTextEl.value.trim() || "(Prescrição em branco)";
+      const prescHtml = nl2br(presc);
+      const data = docDateEl.value || todayISO();
+
+      const nome = patientNameEl.value || "________________________________";
+      const cpf = patientCpfEl.value || "________________";
+      const end = patientAddressEl.value || "________________________________";
+      const cidade = patientCityEl.value || "________________";
+
+      return \`
+        <div class="doc-sheet">
+          \${buildHeader("Receita médica — Controlada (Tipo C)")}
+          \${buildMeta()}
+          <div class="doc-section-title">Prescrição</div>
+          <div class="two-columns control-vias">
+            <div class="via-col">
+              <div class="via-label">1ª via</div>
+              <div class="via-presc doc-body">\${prescHtml}</div>
+              <div class="two-columns">
+                <div class="boxed">
+                  <div class="control-header">IDENTIFICAÇÃO DO COMPRADOR</div>
+                  <div class="boxed-row">
+                    <span class="label">Nome:</span>
+                    <span>\${nome}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">CPF:</span>
+                    <span>\${cpf}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">End.:</span>
+                    <span>\${end}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">Cidade:</span>
+                    <span>\${cidade}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">Telefone:</span>
+                    <span>________________________</span>
+                  </div>
+                </div>
+                <div class="boxed">
+                  <div class="control-header">IDENTIFICAÇÃO DO FORNECEDOR</div>
+                  <div class="boxed-row">
+                    <span class="label">Data:</span>
+                    <span>\${data.split("-").reverse().join("/")}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">Ass. do farmacêutico:</span>
+                    <span style="height:40px;"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="via-col">
+              <div class="via-label">2ª via</div>
+              <div class="via-presc doc-body">\${prescHtml}</div>
+              <div class="two-columns">
+                <div class="boxed">
+                  <div class="control-header">IDENTIFICAÇÃO DO COMPRADOR</div>
+                  <div class="boxed-row">
+                    <span class="label">Nome:</span>
+                    <span>\${nome}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">CPF:</span>
+                    <span>\${cpf}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">End.:</span>
+                    <span>\${end}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">Cidade:</span>
+                    <span>\${cidade}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">Telefone:</span>
+                    <span>________________________</span>
+                  </div>
+                </div>
+                <div class="boxed">
+                  <div class="control-header">IDENTIFICAÇÃO DO FORNECEDOR</div>
+                  <div class="boxed-row">
+                    <span class="label">Data:</span>
+                    <span>\${data.split("-").reverse().join("/")}</span>
+                  </div>
+                  <div class="boxed-row">
+                    <span class="label">Ass. do farmacêutico:</span>
+                    <span style="height:40px;"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          \${buildSignature()}
+        </div>
+      \`;
+    }
+
+    function buildSolExamesLaboratoriais() {
+      const manual = examsLabEl.value
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const all = manual;
+      const corpo =
+        all.length === 0
+          ? "(Sem exames selecionados. Preencha no campo de exames.)"
+          : "<ul><li>" + all.join("</li><li>") + "</li></ul>";
+
+      return \`
+        <div class="doc-sheet">
+          \${buildHeader("Solicitação de exames laboratoriais")}
+          \${buildMeta()}
+          <div class="doc-section-title">Exames solicitados</div>
+          <div class="doc-body">\${corpo}</div>
+          \${buildSignature()}
+        </div>
+      \`;
+    }
+
+    function buildSolExamesImagem() {
+      const manual = examsImgEl.value
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const all = manual;
+      const corpo =
+        all.length === 0
+          ? "(Sem exames selecionados. Preencha no campo de exames de imagem.)"
+          : "<ul><li>" + all.join("</li><li>") + "</li></ul>";
+
+      return \`
+        <div class="doc-sheet">
+          \${buildHeader("Solicitação de exame de imagem")}
+          \${buildMeta()}
+          <div class="doc-section-title">Exames solicitados</div>
+          <div class="doc-body">\${corpo}</div>
+          \${buildSignature()}
+        </div>
+      \`;
+    }
+
+    function buildAtestado() {
+      const nome = patientNameEl.value || "________________________________";
+      const cpf = patientCpfEl.value || "________________";
+      const dias = atestadoDiasEl.value || "___";
+      const diasExt = atestadoDiasExtensoEl.value || "________";
+
+      const texto = \`Atesto para os devidos fins, a pedido, que o(a) Sr(a) \${nome}, identidade ou CPF \${cpf}, necessita de \${dias} (\${diasExt}) dias de afastamento do trabalho por motivo de doença.\`;
+
+      return \`
+        <div class="doc-sheet">
+          \${buildHeader("Atestado médico")}
+          \${buildMeta()}
+          <div class="doc-body">\${texto}</div>
+          \${buildSignature()}
+        </div>
+      \`;
+    }
+
+    function updatePreview() {
+      const type = docTypeEl.value;
+      let html = "";
+
+      if (type === "receita-simples") {
+        atestadoConfig.style.display = "none";
+        html = buildReceitaSimples();
+      } else if (type === "receita-controlada") {
+        atestadoConfig.style.display = "none";
+        html = buildReceitaControlada();
+      } else if (type === "sol-exames-lab") {
+        atestadoConfig.style.display = "none";
+        html = buildSolExamesLaboratoriais();
+      } else if (type === "sol-exames-imagem") {
+        atestadoConfig.style.display = "none";
+        html = buildSolExamesImagem();
+      } else if (type === "atestado") {
+        atestadoConfig.style.display = "block";
+        html = buildAtestado();
+      }
+
+      previewContainer.innerHTML = html;
+    }
+
+    [
+      docDateEl,
+      docTypeEl,
+      patientNameEl,
+      patientCpfEl,
+      patientAddressEl,
+      patientCityEl,
+      prescriptionTextEl,
+      atestadoDiasEl,
+      atestadoDiasExtensoEl,
+      examsLabEl,
+      examsImgEl,
+    ].forEach((el) => {
+      el.addEventListener("input", updatePreview);
+      el.addEventListener("change", updatePreview);
+    });
+
+    document.querySelectorAll("button[data-template]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const type = btn.getAttribute("data-template");
+        let snippet = "";
+
+        if (type === "wegovy") {
+          snippet =
+            "Semaglutida (Wegovy) ____ mg, caneta " +
+            wegovyPresentationEl.value +
+            ", via SC, 1x por semana, por ____ semanas.\n";
+        } else if (type === "mounjaro") {
+          snippet =
+            "Tirzepatida (Mounjaro) ____ mg, apresentação " +
+            mounjaroPresentationEl.value +
+            ", via SC, 1x por semana, por ____ semanas.\n";
+        } else if (type === "rybelsus") {
+          snippet =
+            "Semaglutida oral (Rybelsus) 3 mg, VO, 1 comprimido em jejum, 1x ao dia, por 30 dias. Engolir o comprimido inteiro com pequena quantidade de água (máx. 120 mL) e aguardar pelo menos 30 minutos antes de ingerir alimentos, outras bebidas ou outros medicamentos VO.\n";
+        } else if (type === "saxenda") {
+          snippet =
+            "Liraglutida (Saxenda) 6 mg/mL, aplicar SC conforme esquema de titulação:\n" +
+            "Semana 1: 0,6 mg/dia SC;\n" +
+            "Semana 2: 1,2 mg/dia SC;\n" +
+            "Semana 3: 1,8 mg/dia SC;\n" +
+            "Semana 4: 2,4 mg/dia SC;\n" +
+            "Semana 5 em diante: 3,0 mg/dia SC (dose de manutenção).\n";
+        } else if (type === "ondansetrona") {
+          snippet =
+            "Ondansetrona 8 mg, VO, se náuseas, a cada 8 horas, se necessário.\n";
+        } else if (type === "peg") {
+          snippet =
+            "Polietilenoglicol 3350 (PEG-Lax) 17 g, VO, 1 vez ao dia, ajustar conforme resposta clínica.\n";
+        } else if (type === "durateston") {
+          snippet =
+            "Durateston 250 mg/mL, aplicar 1 mL (250 mg) IM profunda a cada ___ semanas, por ___ aplicações.\n";
+        } else if (type === "daem") {
+          snippet =
+            "Undecilato de testosterona 250 mg/mL (Daem), aplicar ___ mL IM profunda a cada ___ semanas, por ___ aplicações.\n";
+        } else if (type === "androgel") {
+          snippet =
+            "Androgel (testosterona 16,2 mg/g) — aplicar 2 pumps por dia, em dose única pela manhã, sobre pele íntegra, limpa e seca, aproximadamente no mesmo horário, conforme orientação.\n";
+        } else if (type === "combiron") {
+          snippet =
+            "Combiron Fólico (ferro 120 mg + associação), VO, 1 comprimido ao dia, por ___ semanas.\n";
+        }
+
+        const prefix = prescriptionTextEl.value ? "\n" : "";
+        prescriptionTextEl.value =
+          prescriptionTextEl.value.trimEnd() + prefix + snippet;
+        updatePreview();
+      });
+    });
+
+    document.querySelectorAll("button[data-exam-lab]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const label = btn.getAttribute("data-exam-lab");
+        const lines = examsLabEl.value.split("\n").map((l) => l.trim());
+        if (!lines.includes(label)) {
+          lines.push(label);
+        }
+        examsLabEl.value = lines.filter(Boolean).join("\n");
+        updatePreview();
+      });
+    });
+
+    document.querySelectorAll("button[data-exam-img]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const label = btn.getAttribute("data-exam-img");
+        const lines = examsImgEl.value.split("\n").map((l) => l.trim());
+        if (!lines.includes(label)) {
+          lines.push(label);
+        }
+        examsImgEl.value = lines.filter(Boolean).join("\n");
+        updatePreview();
+      });
+    });
+
+    function updateWegovyCalc() {
+      const weekly = parseFloat(wegovyWeeklyDoseEl.value.replace(",", ".")) || 0;
+      const weeks = parseInt(wegovyWeeksEl.value, 10) || 0;
+
+      if (!weekly || !weeks) {
+        wegovySummaryEl.textContent =
+          "Informe dose semanal (mg) e número de semanas para calcular.";
+        return;
+      }
+
+      const totalMg = weekly * weeks;
+      const totalApplications = weeks;
+
+      wegovySummaryEl.innerHTML =
+        "Dose semanal: <strong>" +
+        weekly.toFixed(2) +
+        " mg</strong><br>" +
+        "Duração: <strong>" +
+        weeks +
+        " semana(s)</strong><br>" +
+        "Total de aplicações: <strong>" +
+        totalApplications +
+        "</strong><br>" +
+        "Total aproximado: <strong>" +
+        totalMg.toFixed(2) +
+        " mg</strong><br>" +
+        "<span class='small-text'>Ajuste o número de canetas conforme apresentação comercial disponível.</span>";
+    }
+
+    wegovyWeeklyDoseEl.addEventListener("input", updateWegovyCalc);
+    wegovyWeeksEl.addEventListener("input", updateWegovyCalc);
+
+    btnWegovyToRx.addEventListener("click", () => {
+      const weekly = parseFloat(wegovyWeeklyDoseEl.value.replace(",", ".")) || 0;
+      const weeks = parseInt(wegovyWeeksEl.value, 10) || 0;
+      if (!weekly || !weeks) return;
+
+      const totalMg = weekly * weeks;
+      const texto =
+        "Semaglutida (Wegovy) " +
+        weekly.toFixed(2) +
+        " mg, caneta " +
+        wegovyPresentationEl.value +
+        ", via SC, 1x por semana, por " +
+        weeks +
+        " semana(s). Total aproximado de " +
+        totalMg.toFixed(2) +
+        " mg de semaglutida ao final do esquema.\n";
+
+      const prefix = prescriptionTextEl.value ? "\n" : "";
+      prescriptionTextEl.value =
+        prescriptionTextEl.value.trimEnd() + prefix + texto;
+      updatePreview();
+    });
+
+    function updateMounjaroCalc() {
+      const weekly =
+        parseFloat(mounjaroWeeklyDoseEl.value.replace(",", ".")) || 0;
+      const weeks = parseInt(mounjaroWeeksEl.value, 10) || 0;
+
+      if (!weekly || !weeks) {
+        mounjaroSummaryEl.textContent =
+          "Informe dose semanal (mg) e número de semanas para calcular.";
+        return;
+      }
+
+      const totalMg = weekly * weeks;
+      const totalApplications = weeks;
+
+      mounjaroSummaryEl.innerHTML =
+        "Dose semanal: <strong>" +
+        weekly.toFixed(2) +
+        " mg</strong><br>" +
+        "Duração: <strong>" +
+        weeks +
+        " semana(s)</strong><br>" +
+        "Total de aplicações: <strong>" +
+        totalApplications +
+        "</strong><br>" +
+        "Total aproximado: <strong>" +
+        totalMg.toFixed(2) +
+        " mg</strong><br>" +
+        "<span class='small-text'>Ajuste o número de canetas conforme apresentação comercial disponível.</span>";
+    }
+
+    mounjaroWeeklyDoseEl.addEventListener("input", updateMounjaroCalc);
+    mounjaroWeeksEl.addEventListener("input", updateMounjaroCalc);
+
+    btnMounjaroToRx.addEventListener("click", () => {
+      const weekly =
+        parseFloat(mounjaroWeeklyDoseEl.value.replace(",", ".")) || 0;
+      const weeks = parseInt(mounjaroWeeksEl.value, 10) || 0;
+      if (!weekly || !weeks) return;
+
+      const totalMg = weekly * weeks;
+      const texto =
+        "Tirzepatida (Mounjaro) " +
+        weekly.toFixed(2) +
+        " mg, apresentação " +
+        mounjaroPresentationEl.value +
+        ", via SC, 1x por semana, por " +
+        weeks +
+        " semana(s). Total aproximado de " +
+        totalMg.toFixed(2) +
+        " mg de tirzepatida ao final do esquema.\n";
+
+      const prefix = prescriptionTextEl.value ? "\n" : "";
+      prescriptionTextEl.value =
+        prescriptionTextEl.value.trimEnd() + prefix + texto;
+      updatePreview();
+    });
+
+    updatePreview();
+  </script>
+</body>
+</html>
