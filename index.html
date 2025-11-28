@@ -52,7 +52,7 @@
     }
 
     .brand-logo {
-      width: 120px;
+      width: 140px;
       height: auto;
       object-fit: contain;
       background: #ffffff;
@@ -255,7 +255,7 @@
     }
 
     .doc-header-logo {
-      width: 120px;
+      width: 140px;
       height: auto;
       object-fit: contain;
       background: #ffffff;
@@ -668,8 +668,434 @@
   </div>
 
   <script>
-    // JS igual ao da mensagem anterior foi omitido aqui para brevidade.
-    // (No ambiente do usuário, basta colar o script completo enviado na resposta.)
+    window.addEventListener('DOMContentLoaded', function () {
+      var docDateEl = document.getElementById('docDate');
+      var docTypeEl = document.getElementById('docType');
+      var patientNameEl = document.getElementById('patientName');
+      var patientCpfEl = document.getElementById('patientCpf');
+      var patientAddressEl = document.getElementById('patientAddress');
+      var patientCityEl = document.getElementById('patientCity');
+      var prescriptionTextEl = document.getElementById('prescriptionText');
+      var atestadoDiasEl = document.getElementById('atestadoDias');
+      var atestadoDiasExtensoEl = document.getElementById('atestadoDiasExtenso');
+      var examsLabEl = document.getElementById('examsLab');
+      var examsImgEl = document.getElementById('examsImg');
+      var previewContainer = document.getElementById('previewContainer');
+      var atestadoConfig = document.getElementById('atestadoConfig');
+
+      var wegovyPresentationEl = document.getElementById('wegovyPresentation');
+      var wegovyWeeklyDoseEl = document.getElementById('wegovyWeeklyDose');
+      var wegovyWeeksEl = document.getElementById('wegovyWeeks');
+      var wegovySummaryEl = document.getElementById('wegovySummary');
+      var btnWegovyToRx = document.getElementById('btnWegovyToRx');
+
+      var mounjaroPresentationEl = document.getElementById('mounjaroPresentation');
+      var mounjaroWeeklyDoseEl = document.getElementById('mounjaroWeeklyDose');
+      var mounjaroWeeksEl = document.getElementById('mounjaroWeeks');
+      var mounjaroSummaryEl = document.getElementById('mounjaroSummary');
+      var btnMounjaroToRx = document.getElementById('btnMounjaroToRx');
+
+      function todayISO() {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+      }
+
+      if (!docDateEl.value) {
+        docDateEl.value = todayISO();
+      }
+
+      function nl2br(text) {
+        return text.replace(/\n/g, '<br>');
+      }
+
+      function buildHeader(title) {
+        var h = '';
+        h += '<div class="doc-header">';
+        h += '  <div class="doc-header-left">';
+        h += '    <img src="sannomed-logo.png" alt="SannoMed" class="doc-header-logo" />';
+        h += '  </div>';
+        h += '  <div class="doc-header-right">';
+        h += '    SannoMed Serviços Médicos<br/>';
+        h += '    Rua Otto Júlio Malina, 671 — São José/SC<br/>';
+        h += '    Tel: (48) 3034-3735 • contato@sannomed.com.br';
+        h += '  </div>';
+        h += '</div>';
+        h += '<div class="doc-title">' + title + '</div>';
+        return h;
+      }
+
+      function buildMeta() {
+        var nome = patientNameEl.value || '________________________________';
+        var cpf = patientCpfEl.value || '________________';
+        var end = patientAddressEl.value || '________________________________';
+        var cidade = patientCityEl.value || '________________';
+        var data = docDateEl.value || todayISO();
+
+        var m = '';
+        m += '<div class="doc-meta">';
+        m += '  <div><span class="label">Paciente: </span>' + nome + '</div>';
+        m += '  <div><span class="label">CPF: </span>' + cpf + '</div>';
+        m += '  <div><span class="label">Endereço: </span>' + end + '</div>';
+        m += '  <div><span class="label">Cidade/UF: </span>' + cidade + '</div>';
+        m += '  <div><span class="label">Data: </span>' + data + '</div>';
+        m += '</div>';
+        return m;
+      }
+
+      function buildSignature() {
+        var s = '';
+        s += '<div class="doc-signature">';
+        s += '  <div class="doc-signature-line">';
+        s += '    Laila Janaina dos Santos<br/>';
+        s += '    CRM-SC 38237';
+        s += '  </div>';
+        s += '</div>';
+        return s;
+      }
+
+      function buildReceitaSimples() {
+        var presc = prescriptionTextEl.value.trim() || '(Prescrição em branco)';
+        var prescHtml = nl2br(presc);
+
+        function via(numero, legenda) {
+          var t = '';
+          t += '<div class="doc-sheet">';
+          t += buildHeader('Receita médica — ' + numero + 'ª via ' + (legenda ? '(' + legenda + ')' : ''));
+          t += buildMeta();
+          t += '<div class="doc-section-title">Prescrição</div>';
+          t += '<div class="doc-body">' + prescHtml + '</div>';
+          t += buildSignature();
+          t += '</div>';
+          return t;
+        }
+
+        return via(1, 'Farmácia') + via(2, 'Paciente');
+      }
+
+      function buildReceitaControlada() {
+        var presc = prescriptionTextEl.value.trim() || '(Prescrição em branco)';
+        var prescHtml = nl2br(presc);
+        var data = docDateEl.value || todayISO();
+
+        var nome = patientNameEl.value || '________________________________';
+        var cpf = patientCpfEl.value || '________________';
+        var end = patientAddressEl.value || '________________________________';
+        var cidade = patientCityEl.value || '________________';
+
+        var d = '';
+        d += '<div class="doc-sheet">';
+        d += buildHeader('Receita médica — Controlada (Tipo C)');
+        d += buildMeta();
+        d += '<div class="doc-section-title">Prescrição</div>';
+        d += '<div class="two-columns control-vias">';
+
+        function via(label) {
+          var v = '';
+          v += '<div class="via-col">';
+          v += '  <div class="via-label">' + label + '</div>';
+          v += '  <div class="via-presc doc-body">' + prescHtml + '</div>';
+          v += '  <div class="two-columns">';
+
+          v += '    <div class="boxed">';
+          v += '      <div class="control-header">IDENTIFICAÇÃO DO COMPRADOR</div>';
+          v += '      <div class="boxed-row"><span class="label">Nome:</span><span>' + nome + '</span></div>';
+          v += '      <div class="boxed-row"><span class="label">CPF:</span><span>' + cpf + '</span></div>';
+          v += '      <div class="boxed-row"><span class="label">End.:</span><span>' + end + '</span></div>';
+          v += '      <div class="boxed-row"><span class="label">Cidade:</span><span>' + cidade + '</span></div>';
+          v += '      <div class="boxed-row"><span class="label">Telefone:</span><span>________________________</span></div>';
+          v += '    </div>';
+
+          v += '    <div class="boxed">';
+          v += '      <div class="control-header">IDENTIFICAÇÃO DO FORNECEDOR</div>';
+          v += '      <div class="boxed-row"><span class="label">Data:</span><span>' + data.split('-').reverse().join('/') + '</span></div>';
+          v += '      <div class="boxed-row"><span class="label">Ass. do farmacêutico:</span><span style="height:40px;"></span></div>';
+          v += '    </div>';
+
+          v += '  </div>';
+          v += '</div>';
+          return v;
+        }
+
+        d += via('1ª via');
+        d += via('2ª via');
+        d += '</div>';
+        d += buildSignature();
+        d += '</div>';
+        return d;
+      }
+
+      function buildSolExamesLaboratoriais() {
+        var manual = examsLabEl.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+        var all = manual;
+        var corpo;
+        if (all.length === 0) {
+          corpo = '(Sem exames selecionados. Preencha no campo de exames.)';
+        } else {
+          corpo = '<ul><li>' + all.join('</li><li>') + '</li></ul>';
+        }
+
+        var h = '';
+        h += '<div class="doc-sheet">';
+        h += buildHeader('Solicitação de exames laboratoriais');
+        h += buildMeta();
+        h += '<div class="doc-section-title">Exames solicitados</div>';
+        h += '<div class="doc-body">' + corpo + '</div>';
+        h += buildSignature();
+        h += '</div>';
+        return h;
+      }
+
+      function buildSolExamesImagem() {
+        var manual = examsImgEl.value.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+        var all = manual;
+        var corpo;
+        if (all.length === 0) {
+          corpo = '(Sem exames selecionados. Preencha no campo de exames de imagem.)';
+        } else {
+          corpo = '<ul><li>' + all.join('</li><li>') + '</li></ul>';
+        }
+
+        var h = '';
+        h += '<div class="doc-sheet">';
+        h += buildHeader('Solicitação de exame de imagem');
+        h += buildMeta();
+        h += '<div class="doc-section-title">Exames solicitados</div>';
+        h += '<div class="doc-body">' + corpo + '</div>';
+        h += buildSignature();
+        h += '</div>';
+        return h;
+      }
+
+      function buildAtestado() {
+        var nome = patientNameEl.value || '________________________________';
+        var cpf = patientCpfEl.value || '________________';
+        var dias = atestadoDiasEl.value || '___';
+        var diasExt = atestadoDiasExtensoEl.value || '________';
+
+        var texto =
+          'Atesto para os devidos fins, a pedido, que o(a) Sr(a) ' +
+          nome +
+          ', identidade ou CPF ' +
+          cpf +
+          ', necessita de ' +
+          dias +
+          ' (' +
+          diasExt +
+          ') dias de afastamento do trabalho por motivo de doença.';
+
+        var h = '';
+        h += '<div class="doc-sheet">';
+        h += buildHeader('Atestado médico');
+        h += buildMeta();
+        h += '<div class="doc-body">' + texto + '</div>';
+        h += buildSignature();
+        h += '</div>';
+        return h;
+      }
+
+      function updatePreview() {
+        var type = docTypeEl.value;
+        var html = '';
+
+        if (type === 'receita-simples') {
+          atestadoConfig.style.display = 'none';
+          html = buildReceitaSimples();
+        } else if (type === 'receita-controlada') {
+          atestadoConfig.style.display = 'none';
+          html = buildReceitaControlada();
+        } else if (type === 'sol-exames-lab') {
+          atestadoConfig.style.display = 'none';
+          html = buildSolExamesLaboratoriais();
+        } else if (type === 'sol-exames-imagem') {
+          atestadoConfig.style.display = 'none';
+          html = buildSolExamesImagem();
+        } else if (type === 'atestado') {
+          atestadoConfig.style.display = 'block';
+          html = buildAtestado();
+        }
+
+        previewContainer.innerHTML = html;
+      }
+
+      [
+        docDateEl,
+        docTypeEl,
+        patientNameEl,
+        patientCpfEl,
+        patientAddressEl,
+        patientCityEl,
+        prescriptionTextEl,
+        atestadoDiasEl,
+        atestadoDiasExtensoEl,
+        examsLabEl,
+        examsImgEl
+      ].forEach(function (el) {
+        el.addEventListener('input', updatePreview);
+        el.addEventListener('change', updatePreview);
+      });
+
+      document.querySelectorAll('button[data-template]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var type = btn.getAttribute('data-template');
+          var snippet = '';
+
+          if (type === 'wegovy') {
+            snippet =
+              'Semaglutida (Wegovy) ____ mg, caneta ' +
+              wegovyPresentationEl.value +
+              ', via SC, 1x por semana, por ____ semanas.\n';
+          } else if (type === 'mounjaro') {
+            snippet =
+              'Tirzepatida (Mounjaro) ____ mg, apresentação ' +
+              mounjaroPresentationEl.value +
+              ', via SC, 1x por semana, por ____ semanas.\n';
+          } else if (type === 'rybelsus') {
+            snippet =
+              'Semaglutida oral (Rybelsus) 3 mg, VO, 1 comprimido em jejum, 1x ao dia, por 30 dias. Engolir o comprimido inteiro com pequena quantidade de água (máx. 120 mL) e aguardar pelo menos 30 minutos antes de ingerir alimentos, outras bebidas ou outros medicamentos VO.\n';
+          } else if (type === 'saxenda') {
+            snippet =
+              'Liraglutida (Saxenda) 6 mg/mL, aplicar SC conforme esquema de titulação:\n' +
+              'Semana 1: 0,6 mg/dia SC;\n' +
+              'Semana 2: 1,2 mg/dia SC;\n' +
+              'Semana 3: 1,8 mg/dia SC;\n' +
+              'Semana 4: 2,4 mg/dia SC;\n' +
+              'Semana 5 em diante: 3,0 mg/dia SC (dose de manutenção).\n';
+          } else if (type === 'ondansetrona') {
+            snippet =
+              'Ondansetrona 8 mg, VO, se náuseas, a cada 8 horas, se necessário.\n';
+          } else if (type === 'peg') {
+            snippet =
+              'Polietilenoglicol 3350 (PEG-Lax) 17 g, VO, 1 vez ao dia, ajustar conforme resposta clínica.\n';
+          } else if (type === 'durateston') {
+            snippet =
+              'Durateston 250 mg/mL, aplicar 1 mL (250 mg) IM profunda a cada ___ semanas, por ___ aplicações.\n';
+          } else if (type === 'daem') {
+            snippet =
+              'Undecilato de testosterona 250 mg/mL (Daem), aplicar ___ mL IM profunda a cada ___ semanas, por ___ aplicações.\n';
+          } else if (type === 'androgel') {
+            snippet =
+              'Androgel (testosterona 16,2 mg/g) — aplicar 2 pumps por dia, em dose única pela manhã, sobre pele íntegra, limpa e seca, aproximadamente no mesmo horário, conforme orientação.\n';
+          } else if (type === 'combiron') {
+            snippet =
+              'Combiron Fólico (ferro 120 mg + associação), VO, 1 comprimido ao dia, por ___ semanas.\n';
+          }
+
+          var prefix = prescriptionTextEl.value ? '\n' : '';
+          prescriptionTextEl.value = (prescriptionTextEl.value.trimEnd() + prefix + snippet).trimStart();
+          updatePreview();
+        });
+      });
+
+      document.querySelectorAll('button[data-exam-lab]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var label = btn.getAttribute('data-exam-lab');
+          var lines = examsLabEl.value.split('\n').map(function (l) { return l.trim(); });
+          if (lines.indexOf(label) === -1) {
+            lines.push(label);
+          }
+          examsLabEl.value = lines.filter(Boolean).join('\n');
+          updatePreview();
+        });
+      });
+
+      document.querySelectorAll('button[data-exam-img]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var label = btn.getAttribute('data-exam-img');
+          var lines = examsImgEl.value.split('\n').map(function (l) { return l.trim(); });
+          if (lines.indexOf(label) === -1) {
+            lines.push(label);
+          }
+          examsImgEl.value = lines.filter(Boolean).join('\n');
+          updatePreview();
+        });
+      });
+
+      function updateWegovyCalc() {
+        var weekly = parseFloat((wegovyWeeklyDoseEl.value || '0').replace(',', '.')) || 0;
+        var weeks = parseInt(wegovyWeeksEl.value || '0', 10) || 0;
+
+        if (!weekly || !weeks) {
+          wegovySummaryEl.textContent = 'Informe dose semanal (mg) e número de semanas para calcular.';
+          return;
+        }
+
+        var totalMg = weekly * weeks;
+        var totalApplications = weeks;
+
+        wegovySummaryEl.innerHTML =
+          'Dose semanal: <strong>' + weekly.toFixed(2) + ' mg</strong><br>' +
+          'Duração: <strong>' + weeks + ' semana(s)</strong><br>' +
+          'Total de aplicações: <strong>' + totalApplications + '</strong><br>' +
+          'Total aproximado: <strong>' + totalMg.toFixed(2) + ' mg</strong><br>' +
+          '<span class="small-text">Ajuste o número de canetas conforme apresentação comercial disponível.</span>';
+      }
+
+      wegovyWeeklyDoseEl.addEventListener('input', updateWegovyCalc);
+      wegovyWeeksEl.addEventListener('input', updateWegovyCalc);
+
+      btnWegovyToRx.addEventListener('click', function () {
+        var weekly = parseFloat((wegovyWeeklyDoseEl.value || '0').replace(',', '.')) || 0;
+        var weeks = parseInt(wegovyWeeksEl.value || '0', 10) || 0;
+        if (!weekly || !weeks) return;
+
+        var totalMg = weekly * weeks;
+        var texto =
+          'Semaglutida (Wegovy) ' + weekly.toFixed(2) + ' mg, caneta ' +
+          wegovyPresentationEl.value + ', via SC, 1x por semana, por ' +
+          weeks + ' semana(s). Total aproximado de ' + totalMg.toFixed(2) +
+          ' mg de semaglutida ao final do esquema.\n';
+
+        var prefix = prescriptionTextEl.value ? '\n' : '';
+        prescriptionTextEl.value = (prescriptionTextEl.value.trimEnd() + prefix + texto).trimStart();
+        updatePreview();
+      });
+
+      function updateMounjaroCalc() {
+        var weekly = parseFloat((mounjaroWeeklyDoseEl.value || '0').replace(',', '.')) || 0;
+        var weeks = parseInt(mounjaroWeeksEl.value || '0', 10) || 0;
+
+        if (!weekly || !weeks) {
+          mounjaroSummaryEl.textContent = 'Informe dose semanal (mg) e número de semanas para calcular.';
+          return;
+        }
+
+        var totalMg = weekly * weeks;
+        var totalApplications = weeks;
+
+        mounjaroSummaryEl.innerHTML =
+          'Dose semanal: <strong>' + weekly.toFixed(2) + ' mg</strong><br>' +
+          'Duração: <strong>' + weeks + ' semana(s)</strong><br>' +
+          'Total de aplicações: <strong>' + totalApplications + '</strong><br>' +
+          'Total aproximado: <strong>' + totalMg.toFixed(2) + ' mg</strong><br>' +
+          '<span class="small-text">Ajuste o número de canetas conforme apresentação comercial disponível.</span>';
+      }
+
+      mounjaroWeeklyDoseEl.addEventListener('input', updateMounjaroCalc);
+      mounjaroWeeksEl.addEventListener('input', updateMounjaroCalc);
+
+      btnMounjaroToRx.addEventListener('click', function () {
+        var weekly = parseFloat((mounjaroWeeklyDoseEl.value || '0').replace(',', '.')) || 0;
+        var weeks = parseInt(mounjaroWeeksEl.value || '0', 10) || 0;
+        if (!weekly || !weeks) return;
+
+        var totalMg = weekly * weeks;
+        var texto =
+          'Tirzepatida (Mounjaro) ' + weekly.toFixed(2) +
+          ' mg, apresentação ' + mounjaroPresentationEl.value +
+          ', via SC, 1x por semana, por ' + weeks +
+          ' semana(s). Total aproximado de ' + totalMg.toFixed(2) +
+          ' mg de tirzepatida ao final do esquema.\n';
+
+        var prefix = prescriptionTextEl.value ? '\n' : '';
+        prescriptionTextEl.value = (prescriptionTextEl.value.trimEnd() + prefix + texto).trimStart();
+        updatePreview();
+      });
+
+      updatePreview();
+    });
   </script>
 </body>
 </html>
