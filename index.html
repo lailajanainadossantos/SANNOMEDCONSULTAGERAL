@@ -271,49 +271,82 @@
 
     .via-card {
       border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      padding: 8px 10px;
+      border: 1px solid #000;
+      padding: 6px 8px;
+    }
+
+    .via-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 3px;
+      margin-bottom: 4px;
+    }
+
+    .via-logo {
+      width: 70px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .via-header-top-text {
+      font-size: 0.7rem;
+      text-align: left;
+      line-height: 1.2;
+    }
+
+    .via-header-top-text strong {
+      display: block;
+      font-size: 0.8rem;
     }
 
     .via-header {
-      text-align: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #000;
+      padding-bottom: 3px;
+      font-size: 0.75rem;
+    }
+
+    .via-meta-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .via-meta-line span {
+      flex: 1;
     }
 
     .via-title {
       font-weight: 600;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       text-transform: uppercase;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
+      text-align: center;
     }
 
     .via-meta {
-      font-size: 0.72rem;
-      margin-top: 4px;
-    }
-
-    .via-meta span {
-      display: inline-block;
-      margin-right: 8px;
+      font-size: 0.74rem;
     }
 
     .doc-body {
-      margin-top: 8px;
-      font-size: 0.8rem;
+      margin-top: 6px;
+      font-size: 0.78rem;
       line-height: 1.35;
       white-space: pre-wrap;
-      border-top: 1px dotted #e5e7eb;
-      padding-top: 6px;
+      min-height: 160px;
     }
 
     .doc-signature {
-      margin-top: 16px;
+      margin-top: 10px;
       text-align: center;
       font-size: 0.75rem;
     }
 
     .doc-signature-line {
-      margin-top: 18px;
+      margin-top: 12px;
       border-top: 1px solid #111827;
       width: 260px;
       margin-left: auto;
@@ -697,18 +730,32 @@
       function buildViasDoc(tipo) {
         const nome = patientNameEl.value || '______________________________';
         const cidade = patientCityEl.value || '__________';
+        const end = patientAddressEl.value || '______________________________';
         const dataBR = formatDateBR(docDateEl.value || todayISO());
         const presc = prescriptionTextEl.value.trim() || '(Prescrição em branco)';
 
         function via(label) {
           return `
           <div class="via-card">
+            <div class="via-header-top">
+              <img src="sannomed-logo.png" class="via-logo" alt="SannoMed" />
+              <div class="via-header-top-text">
+                <strong>SannoMed</strong>
+                Rua Otto Júlio Malina, 671 — São José/SC<br/>
+                Tel: (48) 3034-3735 · contato@sannomed.com.br
+              </div>
+            </div>
             <div class="via-header">
               <div class="via-title">${buildViasBaseTitle(tipo, label)}</div>
               <div class="via-meta">
-                <span>Paciente: ${nome}</span>
-                <span>Cidade: ${cidade}</span>
-                <span>Data: ${dataBR}</span>
+                <div class="via-meta-line">
+                  <span><strong>Paciente:</strong> ${nome}</span>
+                  <span><strong>Cidade/UF:</strong> ${cidade}</span>
+                </div>
+                <div class="via-meta-line">
+                  <span><strong>Endereço:</strong> ${end}</span>
+                  <span><strong>Data:</strong> ${dataBR}</span>
+                </div>
               </div>
             </div>
             <div class="doc-body">${presc}</div>
@@ -719,13 +766,6 @@
 
         return `
         <div class="doc-sheet" contenteditable="true">
-          <div class="sheet-header">
-            <img src="sannomed-logo.png" alt="SannoMed" class="sheet-logo" />
-            <div class="sheet-clinic-name">SannoMed</div>
-            <div class="sheet-clinic-info">
-              Rua Otto Júlio Malina, 671 — São José/SC · Tel: (48) 3034-3735 · contato@sannomed.com.br
-            </div>
-          </div>
           <div class="vias-grid">
             ${via('1ª via')}
             ${via('2ª via')}
