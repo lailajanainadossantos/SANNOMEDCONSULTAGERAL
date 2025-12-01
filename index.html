@@ -240,10 +240,33 @@
       line-height: 1.35;
     }
 
+    .sheet-header {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .sheet-logo {
+      width: 120px;
+      height: auto;
+      object-fit: contain;
+      margin: 2px auto;
+      display: block;
+    }
+
+    .sheet-clinic-name {
+      font-weight: 700;
+    }
+
+    .sheet-clinic-info {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
     .vias-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+      margin-top: 6px;
     }
 
     .via-card {
@@ -262,25 +285,6 @@
       font-size: 0.82rem;
       text-transform: uppercase;
       margin-bottom: 3px;
-    }
-
-    .via-logo {
-      width: 110px;
-      height: auto;
-      object-fit: contain;
-      margin: 2px auto;
-      display: block;
-    }
-
-    .via-clinic-name {
-      font-weight: 700;
-      margin-top: 2px;
-    }
-
-    .via-clinic-info {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 2px;
     }
 
     .via-meta {
@@ -362,6 +366,28 @@
       border-color: var(--accent);
     }
 
+    .tipo-c-footer {
+      margin-top: 10px;
+      font-size: 0.7rem;
+    }
+
+    .tipo-c-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .tipo-c-table th,
+    .tipo-c-table td {
+      border: 1px solid #000;
+      padding: 2px 4px;
+      text-align: left;
+    }
+
+    .tipo-c-table th {
+      font-weight: 600;
+      text-align: center;
+    }
+
     @media (max-width: 900px) {
       main { grid-template-columns: 1fr; }
       .preview { max-height: none; }
@@ -434,17 +460,14 @@
 
           <div class="field-row">
             <div>
-              <label for="patientCpf">CPF</label>
-              <input type="text" id="patientCpf" placeholder="000.000.000-00" />
-            </div>
-            <div>
               <label for="patientCity">Cidade / UF</label>
               <input type="text" id="patientCity" placeholder="São José / SC" />
             </div>
+            <div>
+              <label for="patientAddress">Endereço</label>
+              <input type="text" id="patientAddress" placeholder="Rua, número, complemento, bairro" />
+            </div>
           </div>
-
-          <label for="patientAddress" style="margin-top: 6px;">Endereço</label>
-          <input type="text" id="patientAddress" placeholder="Rua, número, complemento, bairro" />
         </div>
 
         <div>
@@ -554,8 +577,7 @@
             </div>
           </div>
           <p class="small-text">
-            "Atesto para os devidos fins, a pedido, que o(a) Sr(a) [NOME], identidade ou CPF [CPF],
-            necessita de ___ (____) dias de afastamento do trabalho por motivo de doença."
+            "Atesto para os devidos fins, a pedido, que o(a) Sr(a) [NOME], necessita de ___ (____) dias de afastamento do trabalho por motivo de doença."
           </p>
         </div>
 
@@ -591,7 +613,6 @@
       const docDateEl = document.getElementById('docDate');
       const docTypeEl = document.getElementById('docType');
       const patientNameEl = document.getElementById('patientName');
-      const patientCpfEl = document.getElementById('patientCpf');
       const patientAddressEl = document.getElementById('patientAddress');
       const patientCityEl = document.getElementById('patientCity');
       const prescriptionTextEl = document.getElementById('prescriptionText');
@@ -641,9 +662,40 @@
         return 'Receita médica — ' + viaLabel;
       }
 
+      function buildTipoCFooter() {
+        return `
+        <div class="tipo-c-footer">
+          <table class="tipo-c-table">
+            <tr>
+              <th colspan="2">IDENTIFICAÇÃO DO COMPRADOR</th>
+              <th colspan="2">IDENTIFICAÇÃO DO FORNECEDOR</th>
+              <th colspan="2">IDENTIFICAÇÃO DO COMPRADOR</th>
+              <th colspan="2">IDENTIFICAÇÃO DO FORNECEDOR</th>
+            </tr>
+            <tr>
+              <td>Nome:</td><td></td>
+              <td rowspan="4" colspan="2">Data: ____/____/______<br/>Ass do farmacêutico:</td>
+              <td>Nome:</td><td></td>
+              <td rowspan="4" colspan="2">Data: ____/____/______<br/>Ass do farmacêutico:</td>
+            </tr>
+            <tr>
+              <td>End:</td><td></td>
+              <td>End:</td><td></td>
+            </tr>
+            <tr>
+              <td>Cidade:</td><td></td>
+              <td>Cidade:</td><td></td>
+            </tr>
+            <tr>
+              <td>Telefone:</td><td></td>
+              <td>Telefone:</td><td></td>
+            </tr>
+          </table>
+        </div>`;
+      }
+
       function buildViasDoc(tipo) {
         const nome = patientNameEl.value || '______________________________';
-        const cpf = patientCpfEl.value || '________________';
         const cidade = patientCityEl.value || '__________';
         const dataBR = formatDateBR(docDateEl.value || todayISO());
         const presc = prescriptionTextEl.value.trim() || '(Prescrição em branco)';
@@ -653,14 +705,8 @@
           <div class="via-card">
             <div class="via-header">
               <div class="via-title">${buildViasBaseTitle(tipo, label)}</div>
-              <img src="sannomed-logo.png" alt="SannoMed" class="via-logo" />
-              <div class="via-clinic-name">SannoMed</div>
-              <div class="via-clinic-info">
-                Rua Otto Júlio Malina, 671 — São José/SC · Tel: (48) 3034-3735 · contato@sannomed.com.br
-              </div>
               <div class="via-meta">
                 <span>Paciente: ${nome}</span>
-                <span>CPF: ${cpf}</span>
                 <span>Cidade: ${cidade}</span>
                 <span>Data: ${dataBR}</span>
               </div>
@@ -669,12 +715,22 @@
           </div>`;
         }
 
+        const footer = tipo === 'receita-controlada' ? buildTipoCFooter() : '';
+
         return `
         <div class="doc-sheet" contenteditable="true">
+          <div class="sheet-header">
+            <img src="sannomed-logo.png" alt="SannoMed" class="sheet-logo" />
+            <div class="sheet-clinic-name">SannoMed</div>
+            <div class="sheet-clinic-info">
+              Rua Otto Júlio Malina, 671 — São José/SC · Tel: (48) 3034-3735 · contato@sannomed.com.br
+            </div>
+          </div>
           <div class="vias-grid">
             ${via('1ª via')}
             ${via('2ª via')}
           </div>
+          ${footer}
           <div class="doc-signature">
             <div class="doc-signature-line">
               <div class="doc-signature-name">Laila Janaina dos Santos</div>
@@ -686,7 +742,6 @@
 
       function buildSolExamesLaboratoriais() {
         const nome = patientNameEl.value || '______________________________';
-        const cpf = patientCpfEl.value || '________________';
         const cidade = patientCityEl.value || '__________';
         const end = patientAddressEl.value || '______________________________';
         const dataBR = formatDateBR(docDateEl.value || todayISO());
@@ -699,10 +754,16 @@
 
         return `
         <div class="doc-sheet" contenteditable="true">
+          <div class="sheet-header">
+            <img src="sannomed-logo.png" alt="SannoMed" class="sheet-logo" />
+            <div class="sheet-clinic-name">SannoMed</div>
+            <div class="sheet-clinic-info">
+              Rua Otto Júlio Malina, 671 — São José/SC · Tel: (48) 3034-3735 · contato@sannomed.com.br
+            </div>
+          </div>
           <div class="doc-title-single">Solicitação de exames laboratoriais</div>
           <div class="doc-meta-single">
             <div><strong>Paciente:</strong> ${nome}</div>
-            <div><strong>CPF:</strong> ${cpf}</div>
             <div><strong>Endereço:</strong> ${end}</div>
             <div><strong>Cidade/UF:</strong> ${cidade}</div>
             <div><strong>Data:</strong> ${dataBR}</div>
@@ -719,7 +780,6 @@
 
       function buildSolExamesImagem() {
         const nome = patientNameEl.value || '______________________________';
-        const cpf = patientCpfEl.value || '________________';
         const cidade = patientCityEl.value || '__________';
         const end = patientAddressEl.value || '______________________________';
         const dataBR = formatDateBR(docDateEl.value || todayISO());
@@ -732,10 +792,16 @@
 
         return `
         <div class="doc-sheet" contenteditable="true">
+          <div class="sheet-header">
+            <img src="sannomed-logo.png" alt="SannoMed" class="sheet-logo" />
+            <div class="sheet-clinic-name">SannoMed</div>
+            <div class="sheet-clinic-info">
+              Rua Otto Júlio Malina, 671 — São José/SC · Tel: (48) 3034-3735 · contato@sannomed.com.br
+            </div>
+          </div>
           <div class="doc-title-single">Solicitação de exame de imagem</div>
           <div class="doc-meta-single">
             <div><strong>Paciente:</strong> ${nome}</div>
-            <div><strong>CPF:</strong> ${cpf}</div>
             <div><strong>Endereço:</strong> ${end}</div>
             <div><strong>Cidade/UF:</strong> ${cidade}</div>
             <div><strong>Data:</strong> ${dataBR}</div>
@@ -752,7 +818,6 @@
 
       function buildAtestado() {
         const nome = patientNameEl.value || '______________________________';
-        const cpf = patientCpfEl.value || '________________';
         const dias = atestadoDiasEl.value || '___';
         const diasExt = atestadoDiasExtensoEl.value || '________';
         const cidade = patientCityEl.value || '__________';
@@ -761,9 +826,7 @@
         const texto =
           'Atesto para os devidos fins, a pedido, que o(a) Sr(a) ' +
           nome +
-          ', identidade ou CPF ' +
-          cpf +
-          ', necessita de ' +
+          ' necessita de ' +
           dias +
           ' (' +
           diasExt +
@@ -771,10 +834,16 @@
 
         return `
         <div class="doc-sheet" contenteditable="true">
+          <div class="sheet-header">
+            <img src="sannomed-logo.png" alt="SannoMed" class="sheet-logo" />
+            <div class="sheet-clinic-name">SannoMed</div>
+            <div class="sheet-clinic-info">
+              Rua Otto Júlio Malina, 671 — São José/SC · Tel: (48) 3034-3735 · contato@sannomed.com.br
+            </div>
+          </div>
           <div class="doc-title-single">Atestado médico</div>
           <div class="doc-meta-single">
             <div><strong>Paciente:</strong> ${nome}</div>
-            <div><strong>CPF:</strong> ${cpf}</div>
             <div><strong>Cidade/UF:</strong> ${cidade}</div>
             <div><strong>Data:</strong> ${dataBR}</div>
           </div>
@@ -813,7 +882,6 @@
         docDateEl,
         docTypeEl,
         patientNameEl,
-        patientCpfEl,
         patientAddressEl,
         patientCityEl,
         prescriptionTextEl,
